@@ -1,23 +1,22 @@
+//Modified by DecisionsLab to acquire configFilePath from local storage.
+
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'exception.dart';
-import 'payload.dart';
-import 'result.dart';
+import 'package:msal_mobile/msal_mobile.dart';
+import 'package:msal_mobile/result.dart';
 
-export 'exception.dart';
-export 'account.dart';
-export 'payload.dart';
-
-class MsalMobile {
+class DecisionsMsalMobile {
   static const MethodChannel _channel =
       const MethodChannel('com.gbwisx.msal_mobile');
   static bool initialized = false;
 
   /// Creates a new MsalMobile client object to make calls to the MSAL library.
   /// The signed in status is updated as a result of this call.
-  static Future<MsalMobile> create(
+  static Future<DecisionsMsalMobile> create(
       String configFilePath, String authority) async {
     if (initialized) {
       throw MsalMobileException.fromErrorCode(
@@ -48,15 +47,21 @@ class MsalMobile {
       throw MsalMobileException.copy(result.exception, result.innerException);
     }
     initialized = true;
-    final client = MsalMobile();
+    final client = DecisionsMsalMobile();
     return client;
   }
 
   /// Caches the auth configuration file so it can be accessed by the platform specific MSAL implementations.
   static Future<String> cacheConfigFile(String configPath) async {
-    final ByteData data = await rootBundle.load(configPath);
-    final file = await DefaultCacheManager()
-        .putFile(configPath, data.buffer.asUint8List());
+    var file;
+    if (configPath.contains("assets")) {
+      final ByteData data = await rootBundle.load(configPath);
+      file = await DefaultCacheManager()
+          .putFile(configPath, data.buffer.asUint8List());
+    } else {
+      final data = File(configPath).readAsBytesSync();
+      file = await DefaultCacheManager().putFile(configPath, data);
+    }
     return file.path;
   }
 
