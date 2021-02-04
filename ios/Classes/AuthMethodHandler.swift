@@ -4,7 +4,7 @@
 //
 //  Created by Greg Burke on 12/27/19.
 //  Copyright © 2019 The Chromium Authors. All rights reserved.
-//
+//  Modified by DecisiobsLab to acquire loginHint during SignIn
 
 import Foundation
 import Flutter
@@ -92,8 +92,8 @@ class AuthMethodHandler {
         result(try response.toJson())
     }
     
-    private func handleSignIn(result: @escaping FlutterResult, scopes: [String]) {
-        self.handleAcquireToken(result: result, scopes: scopes)
+    private func handleSignIn(result: @escaping FlutterResult, scopes: [String],loginHint: loginHint) {
+        self.handleAcquireToken(result: result, scopes: scopes, loginHint:loginHint )
     }
     
     private func handleSignOut(result: FlutterResult) throws {
@@ -101,8 +101,8 @@ class AuthMethodHandler {
         success(result: result)
     }
     
-    private func handleAcquireToken(result: @escaping FlutterResult, scopes: [String]) {
-        auth?.acquireToken(scopes: scopes, completionBlock: { (msalResult, error) in
+    private func handleAcquireToken(result: @escaping FlutterResult, scopes: [String], loginHint: String) {
+        auth?.acquireToken(scopes: scopes, loginHint:loginHint, completionBlock: { (msalResult, error) in
             if let error = error {
                 let nsError = error as NSError
                 self.error(result: result, exception: nsError)
@@ -157,9 +157,10 @@ class AuthMethodHandler {
                 try handleGetAccount(result: result);
                 break;
             case "signIn":
+				let loginHint = args["loginHint"] as! String
                 let args = call.arguments! as! NSDictionary
                 let scopes = args["scopes"] as! [String]
-                handleSignIn(result: result, scopes: scopes);
+                handleSignIn(result: result, scopes: scopes,loginHint: loginHint);
                 break;
             case "signOut":
                 try handleSignOut(result: result);
