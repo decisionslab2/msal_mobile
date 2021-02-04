@@ -118,10 +118,6 @@ class DecisionsMsalMobile {
       );
     }
 
-    final response = await _channel.invokeMethod(
-      'signIn',
-      <String, dynamic>{'loginHint': loginHint, 'scopes': scopes},
-    );
     final result = response != null
         ? MsalMobileAuthenticationResult.fromJson(jsonDecode(response))
         : null;

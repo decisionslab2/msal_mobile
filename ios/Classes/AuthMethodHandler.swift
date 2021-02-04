@@ -115,7 +115,7 @@ class AuthMethodHandler {
     }
 
     private func handleAcquireTokenWithLoginHint(result: @escaping FlutterResult, scopes: [String], loginHint: String) {
-        auth?.acquireToken(scopes: scopes, loginHint:loginHint, completionBlock: { (msalResult, error) in
+        auth?.acquireTokenWithLoginHint(scopes: scopes, loginHint:loginHint, completionBlock: { (msalResult, error) in
             if let error = error {
                 let nsError = error as NSError
                 self.error(result: result, exception: nsError)
