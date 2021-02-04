@@ -106,6 +106,17 @@ class DecisionsMsalMobile {
       throw MsalMobileException.fromErrorCode(
           MsalMobileExceptionErrorCode.notInitialized);
     }
+    if (Platform.isIOS && loginHint != null && loginHint.isNotEmpty) {
+      final response = await _channel.invokeMethod(
+        'signInWithLoginHint',
+        <String, dynamic>{'loginHint': loginHint, 'scopes': scopes},
+      );
+    } else {
+      final response = await _channel.invokeMethod(
+        'signIn',
+        <String, dynamic>{'loginHint': loginHint, 'scopes': scopes},
+      );
+    }
 
     final response = await _channel.invokeMethod(
       'signIn',

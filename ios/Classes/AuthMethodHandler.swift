@@ -1,11 +1,3 @@
-//
-//  AuthMethodHandler.swift
-//  Runner
-//
-//  Created by Greg Burke on 12/27/19.
-//  Copyright © 2019 The Chromium Authors. All rights reserved.
-//  Modified by DecisiobsLab to acquire loginHint during SignIn
-
 import Foundation
 import Flutter
 import MSAL
@@ -92,8 +84,12 @@ class AuthMethodHandler {
         result(try response.toJson())
     }
     
-    private func handleSignIn(result: @escaping FlutterResult, scopes: [String],loginHint: loginHint) {
-        self.handleAcquireToken(result: result, scopes: scopes, loginHint:loginHint )
+    private func handleSignIn(result: @escaping FlutterResult, scopes: [String]) {
+        self.handleAcquireToken(result: result, scopes: scopes)
+    }
+
+    private func handleSignInWithLoginHint(result: @escaping FlutterResult, scopes: [String],loginHint: loginHint) {
+        self.handleAcquireTokenWithLoginHint(result: result, scopes: scopes, loginHint:loginHint )
     }
     
     private func handleSignOut(result: FlutterResult) throws {
@@ -101,7 +97,24 @@ class AuthMethodHandler {
         success(result: result)
     }
     
-    private func handleAcquireToken(result: @escaping FlutterResult, scopes: [String], loginHint: String) {
+    private func handleAcquireToken(result: @escaping FlutterResult, scopes: [String]) {
+        auth?.acquireToken(scopes: scopes, completionBlock: { (msalResult, error) in
+            if let error = error {
+                let nsError = error as NSError
+                self.error(result: result, exception: nsError)
+                return
+            }
+            
+            guard let msalResult = msalResult else {
+                self.error(result: result, errorCode: "msal_result_empty", message: "No error occurred but MSAL result was unexpectedly empty.")
+                return
+            }
+            
+            self.success(result: result, payload: MsalMobileResultPayload(msalResult: msalResult))
+        })
+    }
+
+    private func handleAcquireTokenWithLoginHint(result: @escaping FlutterResult, scopes: [String], loginHint: String) {
         auth?.acquireToken(scopes: scopes, loginHint:loginHint, completionBlock: { (msalResult, error) in
             if let error = error {
                 let nsError = error as NSError
@@ -157,10 +170,15 @@ class AuthMethodHandler {
                 try handleGetAccount(result: result);
                 break;
             case "signIn":
+                let args = call.arguments! as! NSDictionary
+                let scopes = args["scopes"] as! [String]
+                handleSignIn(result: result, scopes: scopes);
+                break;
+            case "signInWithLoginHint":
 				let loginHint = args["loginHint"] as! String
                 let args = call.arguments! as! NSDictionary
                 let scopes = args["scopes"] as! [String]
-                handleSignIn(result: result, scopes: scopes,loginHint: loginHint);
+                handleSignInWithLoginHint(result: result, scopes: scopes,loginHint: loginHint);
                 break;
             case "signOut":
                 try handleSignOut(result: result);
