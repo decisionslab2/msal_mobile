@@ -175,8 +175,8 @@ class AuthMethodHandler {
                 handleSignIn(result: result, scopes: scopes);
                 break;
             case "signInWithLoginHint":
-				let loginHint = args["loginHint"] as! String
                 let args = call.arguments! as! NSDictionary
+                let loginHint = args["loginHint"] as! String
                 let scopes = args["scopes"] as! [String]
                 handleSignInWithLoginHint(result: result, scopes: scopes,loginHint: loginHint);
                 break;
