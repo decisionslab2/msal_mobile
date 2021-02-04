@@ -88,7 +88,7 @@ class AuthMethodHandler {
         self.handleAcquireToken(result: result, scopes: scopes)
     }
 
-    private func handleSignInWithLoginHint(result: @escaping FlutterResult, scopes: [String],loginHint: loginHint) {
+    private func handleSignInWithLoginHint(result: @escaping FlutterResult, scopes: [String],loginHint: String) {
         self.handleAcquireTokenWithLoginHint(result: result, scopes: scopes, loginHint:loginHint )
     }
     
