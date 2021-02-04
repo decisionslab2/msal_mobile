@@ -2,12 +2,16 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:msal_mobile/msal_mobile.dart';
-import 'package:msal_mobile/result.dart';
+import 'exception.dart';
+import 'payload.dart';
+import 'result.dart';
+
+export 'exception.dart';
+export 'account.dart';
+export 'payload.dart';
 
 class DecisionsMsalMobile {
   static const MethodChannel _channel =
