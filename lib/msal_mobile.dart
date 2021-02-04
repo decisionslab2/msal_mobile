@@ -106,17 +106,36 @@ class DecisionsMsalMobile {
       throw MsalMobileException.fromErrorCode(
           MsalMobileExceptionErrorCode.notInitialized);
     }
-    if (Platform.isIOS && loginHint != null && loginHint.isNotEmpty) {
-      final response = await _channel.invokeMethod(
-        'signInWithLoginHint',
-        <String, dynamic>{'loginHint': loginHint, 'scopes': scopes},
-      );
-    } else {
-      final response = await _channel.invokeMethod(
-        'signIn',
-        <String, dynamic>{'loginHint': loginHint, 'scopes': scopes},
-      );
+    final response = await _channel.invokeMethod(
+      'signIn',
+      <String, dynamic>{'loginHint': loginHint, 'scopes': scopes},
+    );
+
+    final result = response != null
+        ? MsalMobileAuthenticationResult.fromJson(jsonDecode(response))
+        : null;
+    if (!result.isSuccess && result.exception != null) {
+      // check if the user is already signed in.  That could be the cause of an invalid_parameter failure from MSAL
+      final signedIn = await this.getSignedIn();
+      if (signedIn) {
+        throw MsalMobileException.fromErrorCode(
+            MsalMobileExceptionErrorCode.alreadySignedIn);
+      }
+      throw MsalMobileException.copy(result.exception, result.innerException);
     }
+    return result.payload;
+  }
+
+  Future<MsalMobileAuthenticationResultPayload> signInWithLoginHint(
+      String loginHint, List<String> scopes) async {
+    if (!initialized) {
+      throw MsalMobileException.fromErrorCode(
+          MsalMobileExceptionErrorCode.notInitialized);
+    }
+    final response = await _channel.invokeMethod(
+      'signInWithLoginHint',
+      <String, dynamic>{'loginHint': loginHint, 'scopes': scopes},
+    );
 
     final result = response != null
         ? MsalMobileAuthenticationResult.fromJson(jsonDecode(response))
